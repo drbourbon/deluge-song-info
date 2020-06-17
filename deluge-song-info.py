@@ -45,7 +45,7 @@ class SongInfo:
   def tempo(self, args):
     print("{} bpm".format(int(float(self.project.tempo))))
 
-  def tonality(self, args):
+  def key(self, args):
     print(self.project.rootTone)
 
   def duration(self, args):
@@ -69,7 +69,7 @@ def main():
   parser_duration = subparsers.add_parser('duration')
   parser_duration.add_argument('--format', help='format song duration', action="store_true")
 
-  parser_tempo = subparsers.add_parser('tonality')
+  parser_tempo = subparsers.add_parser('key')
 
   parser.add_argument(
       "input_file",
