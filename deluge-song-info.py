@@ -3,6 +3,8 @@ import logging
 import argparse
 import traceback
 import datetime
+import audioread
+import os, re
 import xml.etree.ElementTree as ET
 
 try:
@@ -50,11 +52,29 @@ class SongInfo:
 
   def duration(self, args):
     s = self.project_length()
-    if(args.format):
+    if(not args.format):
       td = datetime.timedelta(seconds=s)
       print(td)
     else:
       print("{}s".format(s))
+
+  def find(self, args):
+    s = int(round(self.project_length()))
+    path = '.'
+    wavs = [f for f in os.listdir(path) if os.path.isfile(f) and re.search(r'\.wav$', f, re.IGNORECASE)]
+    wavs.sort(reverse=True)
+    match = []
+    for w in wavs:
+      with audioread.audio_open(w) as wav:
+        wl = int(round(wav.duration))
+        if(wl==s):
+          match.append(w)
+    if(args.rename and len(match)==1 and len(match[0])==12):
+      new_name = '{}#-#{}'.format(os.path.splitext(os.path.basename(args.input_file.name))[0], match[0])
+      os.rename(match[0],new_name)
+      print(match[0], '->', new_name)
+    else:
+      print(match)
 
 def main():
   parser = argparse.ArgumentParser(
@@ -70,6 +90,9 @@ def main():
   parser_duration.add_argument('--format', help='format song duration', action="store_true")
 
   parser_tempo = subparsers.add_parser('key')
+
+  parser_find_wav = subparsers.add_parser('find')
+  parser_find_wav.add_argument('--rename', help='rename matching .wav', action="store_true")
 
   parser.add_argument(
       "input_file",
